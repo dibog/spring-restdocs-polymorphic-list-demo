@@ -1,8 +1,8 @@
 package io.github.dibog.polymorphicarraydemo
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.github.dibog.polymorphicarraydemo.JsonPathSubsectionExtractor.Companion.beneathJsonPath
 import io.github.dibog.polymorphicarraydemo.entities.Node
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,7 +20,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentati
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
 import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation.beneathPath
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
@@ -57,22 +56,12 @@ class PolymorphicNodeListTest {
     }
 
     @Test
-    fun convert() {
-        val mapper = ObjectMapper().registerKotlinModule()
-        val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(list)
-        println(json)
-
-        val list2 = mapper.readValue<List<Node>>(json)
-        println(list2)
-    }
-
-    @Test
     fun documentFetchTree() {
         mockMvc.perform(get("/"))
             .andExpect(status().isOk)
             .andDo(document("fetch-tree",
                 responseFields(
-                    beneathPath("[0]").withSubsectionId("typeA"),
+                    beneathJsonPath("\$[0]").withSubsectionId("typeA"),
                     fieldWithPath("type")
                         .type(JsonFieldType.STRING)
                         .description("only node types 'A' and 'B' are supported"),
@@ -81,7 +70,7 @@ class PolymorphicNodeListTest {
                         .description("specific field for node type A")
                 ),
                 responseFields(
-                    beneathPath("[1]").withSubsectionId("typeB"),
+                    beneathJsonPath("\$[1]").withSubsectionId("typeB"),
                     fieldWithPath("type")
                         .type(JsonFieldType.STRING)
                         .description("only node types 'A' and 'B' are supported"),
@@ -101,7 +90,7 @@ class PolymorphicNodeListTest {
             .andExpect(status().isOk)
             .andDo(document("store-tree",
                 requestFields(
-                    beneathPath("[0]").withSubsectionId("typeA"),
+                    beneathJsonPath("\$[0]").withSubsectionId("typeA"),
                     fieldWithPath("type")
                         .type(JsonFieldType.STRING)
                         .description("only node types 'A' and 'B' are supported"),
@@ -110,7 +99,7 @@ class PolymorphicNodeListTest {
                         .description("specific field for node type A")
                 ),
                 requestFields(
-                    beneathPath("[1]").withSubsectionId("typeB"),
+                    beneathJsonPath("\$[1]").withSubsectionId("typeB"),
                     fieldWithPath("type")
                         .type(JsonFieldType.STRING)
                         .description("only node types 'A' and 'B' are supported"),
@@ -120,5 +109,4 @@ class PolymorphicNodeListTest {
                 )
             ))
     }
-
 }
